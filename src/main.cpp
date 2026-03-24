@@ -67,8 +67,10 @@ class App {
       yellow_diode = high_pressure.val();
       // red diode display low pressure sensor by default
       red_diode = low_pressure.val();
-      // monitor high pressure drop to prevent rapid tripping from hydraulic shock
-      // in order to prevent short turn ons
+      // Monitor high pressure drop to prevent frequent short switching on/off
+      // while actual pressure still enough to trip the switch.
+      // Pressure has to stay low for "preset" time at least to start actuators
+      // in normal mode.
       high_pressure_drop.Update(!high_pressure.val(), current_millis);
 
       switch (state) {

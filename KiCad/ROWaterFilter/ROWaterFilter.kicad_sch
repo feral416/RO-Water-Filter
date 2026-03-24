@@ -8289,7 +8289,6 @@
 		(in_bom yes)
 		(on_board no)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "95d13838-c26b-4153-b3ed-a460af1ed628")
 		(property "Reference" "K1"
 			(at 274.32 129.5399 0)
@@ -8300,14 +8299,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Automatic flushing valve"
-			(at 274.32 132.0799 0)
+		(property "Value" "Auto. flushing valve"
+			(at 264.16 138.43 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -8667,7 +8665,6 @@
 		(in_bom yes)
 		(on_board no)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "a1d32917-7565-4451-b5f6-09656d81ec64")
 		(property "Reference" "K2"
 			(at 256.54 129.5399 0)
@@ -8679,13 +8676,12 @@
 			)
 		)
 		(property "Value" "Intake shutoff valve"
-			(at 256.54 132.0799 0)
+			(at 246.38 138.176 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -8756,25 +8752,25 @@
 			(uuid "5168fef6-ee1f-4b38-83d9-93d784eb76e0")
 		)
 		(pin "13"
-			(uuid "c297f3d2-18de-475d-afaa-33c53414ccef")
+			(uuid "c297f3d2-18de-475d-afaa-33c53414ccf0")
 		)
 		(pin "A1"
 			(uuid "499237d5-0441-4108-8579-4f0ce7528aae")
 		)
 		(pin "14"
-			(uuid "71056ae2-3558-4895-8530-bc5eb542ddb4")
+			(uuid "71056ae2-3558-4895-8530-bc5eb542ddb5")
 		)
 		(pin "24"
-			(uuid "48105a22-3e27-4a5a-a487-2f5e59e6c510")
+			(uuid "48105a22-3e27-4a5a-a487-2f5e59e6c511")
 		)
 		(pin "34"
-			(uuid "7afc7bc3-a77d-4d9b-829d-d57bc91e0bcc")
+			(uuid "7afc7bc3-a77d-4d9b-829d-d57bc91e0bcd")
 		)
 		(pin "33"
-			(uuid "d091bbd0-fb3f-4ace-bf84-af4903caa02e")
+			(uuid "d091bbd0-fb3f-4ace-bf84-af4903caa02f")
 		)
 		(pin "23"
-			(uuid "f1c09cce-c8fc-450e-bb03-78ad84cac0b0")
+			(uuid "f1c09cce-c8fc-450e-bb03-78ad84cac0b1")
 		)
 		(instances
 			(project "ROWaterFilter"
