@@ -1,0 +1,1 @@
+Idle power consumption 44mA at 24V - 1.056W

@@ -179,10 +179,12 @@ class DO {
 
 class Blinker {
   public:
-    Blinker(uint32_t period)
-      : blink_timer(period){}
+    Blinker(uint32_t half_period)
+      : blink_timer(half_period){}
     
-    uint32_t period = 0;
+    uint32_t get_half_period() {
+      return blink_timer.Preset;
+    }
 
     bool update(uint32_t curr_millis) {
       if (blink_timer.Preset == 0) {
@@ -200,7 +202,11 @@ class Blinker {
     bool val() {
       return out;
     }
+
+    void set_half_period(uint32_t new_half_period) {
+      blink_timer.Preset = new_half_period;
+    }
   private:
     TON blink_timer;
-    bool out = true;
+    bool out = false;
 };

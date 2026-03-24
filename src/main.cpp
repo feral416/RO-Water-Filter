@@ -15,14 +15,14 @@ class App {
     // progressive auto restart delays
     enum Waiting_time {
       NONE = 0,
-      NORMAL = 1, //10
-      PROLONGED = 5, //30
+      NORMAL = 10, //10
+      PROLONGED = 30, //30
       LONG = 60
     };
 
     uint32_t current_millis = 0;
     DI low_pressure = DI(LOW_PRESSURE_PIN, SECOND / 2 , SECOND / 2, false);
-    DI high_pressure = DI(HIGH_PRESSURE_PIN, SECOND / 2, SECOND / 2, true);
+    DI high_pressure = DI(HIGH_PRESSURE_PIN, SECOND / 2, SECOND / 2, false);
     DI maintenance_switch = DI(MAINTENANCE_SWITCH_PIN, SECOND / 2, SECOND / 2, true); // 500 ms
     DO pump_solenoid_ctrl = DO(PUMP_SOLENOID_CTRL_PIN, 2 * SECOND, 2 * SECOND);
     DO low_pressure_diode = DO(LOW_PRESSURE_DIODE_PIN, 0, 0);
@@ -30,12 +30,13 @@ class App {
     enum Waiting_time restart_delay_time = NORMAL;
     uint8_t low_pressure_fault_count = 0;
     TON restart_delay_timer;
-    TON operation_timer = TON(40 * MINUTE); // max operation time
+    TON operation_timer = TON(60 * MINUTE); // max operation time
     uint8_t state = 0;
     bool pump_solenoid_out = LOW;
     bool yellow_diode = false;
     bool red_diode = false;
     Blinker blinker = Blinker(0.25 * SECOND);
+    TON high_pressure_drop = TON(30 * SECOND);
 
     void setup() {
       pinMode(LOW_PRESSURE_PIN, INPUT_PULLUP);
@@ -66,6 +67,9 @@ class App {
       yellow_diode = high_pressure.val();
       // red diode display low pressure sensor by default
       red_diode = low_pressure.val();
+      // monitor high pressure drop to prevent rapid tripping from hydraulic shock
+      // in order to prevent short turn ons
+      high_pressure_drop.Update(!high_pressure.val(), current_millis);
 
       switch (state) {
         case 0:
@@ -73,8 +77,10 @@ class App {
           restart_delay_timer.Reset();
           operation_timer.Reset();
           pump_solenoid_out = LOW;
-          if ((!low_pressure.val() || maintenance_switch.val()) && !high_pressure.val()) {
+          if ((maintenance_switch.val() && !high_pressure.val())
+              || (!low_pressure.val() && high_pressure_drop.OUT())) {
             state = 10;
+            break;
           }
           break;
         case 10:
@@ -101,6 +107,7 @@ class App {
           pump_solenoid_out = LOW;
           if (maintenance_switch.val()) {
             state = 0;
+            low_pressure_fault_count = 0;
             break;
           }
           switch (low_pressure_fault_count) {
