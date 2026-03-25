@@ -21,9 +21,9 @@ Schematics made with KiCad, PDF is available in respective folder.
 
 The main controller is Arduino Pro Micro(ATmega32U4) reads 3 signals from two sensors and a switch, output 3 signals to 2 LEDs and one to actuators, that controlled with logic-level mosfet. MC is powered from 24V main supply using L7805 linear voltage regulator. User panel consist of: two LEDs - yellow and red, a switch. Diodes are used to protect from kickback voltages. Cap C3 filtering ripple from DC motor operation.
 
-Note that high pressure sensor is breaks the circuit so as detected by the MC. It's made intentionally redundant to protect from dangerous pressure to build-up or continuous uncontrolled operation due to controller or MOSFET fault.
+Note that high pressure sensor breaks the circuit so as detected by the MC. It's made intentionally redundant to protect from dangerous pressure to build-up or continuous uncontrolled operation due to controller or MOSFET fault.
 
-Idle power consumption of microcontroller is 44mA at 24V - 1.056W.
+Power consumption of the device is 14mA(max) at 24V - 0.336W, 40mA during boot.
 
 ## Software
 
@@ -35,10 +35,16 @@ Software has following functions:
  - Prevent operation in undesired conditions: low pressure or too high pressure.
  - Prevent indefinite operation due to inability to build up pressure by limiting continuous operation time.
  - Prevent frequent turning on/offs caused by low water pressure by adding progressive delay between retries: 10-30-60 minutes
-    thus making it self-recoverable condition.
+   thus making it self-recoverable condition.
  - Prevent frequent operation by requiring high-pressure sensor to stay closed for 30s and making 10m delay between turn-ons.
  - Display sensors state and faults.
  - Allowing to bypass low pressure sensor, reset the faulty state, bypass waiting between switching on.
+
+Loading program only possible shortly(~12s) after reboot.
+
+In order to save power in program is used power down mode, which uses inaccurate wdt timer with tolerance +-20%, so all time operations will be inaccurate, due to that interval time has to be calibrated to exact used devise. In this project interval increased by 18.3% from default 60 to 71ms. Anyways for that project such time drift isn't critical.
+
+Software has a watchdog to prevent mc to hang during program execution leaving outputs in high state, if program won't respond in 3s mc watchdog will reboot the mc.
 
 ## Operation manual
 
