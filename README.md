@@ -5,7 +5,7 @@
 
 Project designed to automate home electric RO water filter system that includes intake shutoff valve, pump and optionally automatic flush valve, using microcontroller Arduino Pro Micro(ATmega32U4). Project has low cost, requires minimum components and uses no extra sensors and actuators.
 
-Aims of the project:
+**Aims of the project:**
 
 - Make operation safer.
 - Prolong lifespan of valves and pump by eliminating major flaws of pure electric control.
@@ -29,7 +29,7 @@ Power consumption of the device is 14mA(max) at 24V- 0.336W, 40mA during boot.
 
 Software is written in PlatformIO with C++ using arduino framework. Software is compatible with any other Arduino-compatible board.
 
-Software has following functions:
+**Software functions:**
 
 - Monitors state of sensors.
 - Prevent operation in undesired conditions: low pressure or too high pressure.
