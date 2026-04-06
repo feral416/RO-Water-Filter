@@ -50,6 +50,9 @@ Software has a watchdog to prevent mc to hang during program execution leaving o
 
 Normal operation doesn't require any user interaction with the controller.
 
+![Front panel](/schematics/UI-small.jpg)
+**Front panel**
+
 Front panel yellow LED displays state of high pressure sensor, if continuos on means high pressure is reached or sensor's wire is broken. If the LED flash it signals that maximum operation time is reached(1h), that can be reseted by switching switch on-off or turning off/on the power supply.
 
 Front panel red LED displays the state of low pressure sensor, if continuous on means that pressure is low or sensor wire is broken. If the LED flash that means low pressure turned on rapidly and gone quickly, which is faulty state and the controller waits some time to try turn on actuators again. This fault recovers by itself or switching the switch on/off or turning off/on the power supply.

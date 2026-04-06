@@ -1,8 +1,8 @@
 #include <Arduino.h>
+#include "LowPower.h"
 
 class TON {
   public:
-    uint32_t Elapsed = 0;
     uint32_t Preset = 0;
 
     TON(uint32_t Preset)
@@ -14,27 +14,31 @@ class TON {
         Reset();
         return false;
       }
-      //detecting r edge of the input
-      if (IN && !prev_in) {
+      //saving starting time on r edge
+      if (!r_edge) {
         starting_millis = curr_millis;
+        r_edge = true;
       }
-      prev_in = IN;
       // preventing elapsed to overlap
       if (!out) {
-        Elapsed = curr_millis - starting_millis;
-        if (Elapsed >= Preset) {
+        elapsed = curr_millis - starting_millis;
+        if (elapsed >= Preset) {
           out = true;
-          Elapsed = Preset;
+          elapsed = Preset;
         }
       }
       return out;
     }
 
+    uint32_t Elapsed() {
+      return elapsed;
+    }
+
     void Reset() {
       out = false;
-      Elapsed = 0;
+      elapsed = 0;
       starting_millis = 0;
-      prev_in = false;
+      r_edge = false;
     }
 
     bool OUT() {
@@ -43,12 +47,13 @@ class TON {
   private:
     bool out = false;
     uint32_t starting_millis = 0;
-    bool prev_in = false;
+    bool r_edge = false;
+    uint32_t elapsed = 0;
 };
 
 class TOF {
   public:
-    uint32_t Elapsed = 0;
+    uint32_t elapsed = 0;
     uint32_t Preset = 0;
 
     TOF(uint32_t Preset)
@@ -58,33 +63,36 @@ class TOF {
     bool Update(bool IN, uint32_t curr_millis){
       if (IN) {
         out = true;
-        Elapsed = 0;
+        elapsed = 0;
         starting_millis = 0;
-        prev_in = true;
+        f_edge = true;
         return out;
       }
       //detecting f edge of the input
-      if (!IN && prev_in) {
+      if (f_edge) {
         starting_millis = curr_millis;
-        out = true;
+        f_edge = false;
       }
-      prev_in = false;
-      // preventing elapsed to overlap
       if (out) {
-        Elapsed = curr_millis - starting_millis;
-        if (Elapsed >= Preset) {
-          Elapsed = Preset;
+        elapsed = curr_millis - starting_millis;
+        if (elapsed >= Preset) {
+          // preventing elapsed to overlap
+          elapsed = Preset;
           out = false;
         }
       }
       return out;
     }
 
+    uint32_t Elapsed() {
+      return elapsed;
+    }
+
     void Reset() {
       out = false;
-      Elapsed = 0;
+      elapsed = 0;
       starting_millis = 0;
-      prev_in = false;
+      f_edge = false;
     }
 
     bool OUT() {
@@ -93,10 +101,10 @@ class TOF {
   private:
     bool out = false;
     uint32_t starting_millis = 0;
-    bool prev_in = false;
+    bool f_edge = false;
 };
 
-// class processess digital input, has min on/off time to filter rapid changes of real signal
+// class processes digital input, has min on/off time to filter rapid changes of real signal
 class DI {
   public:
     DI(uint8_t pin, uint32_t min_on_time, uint32_t min_off_time, bool invert)
@@ -210,3 +218,52 @@ class Blinker {
     TON blink_timer;
     bool out = false;
 };
+
+// Function determines actual time that watchdog timer count. This is especially important if wdt is used in cyclic power down,
+// so adding that time is required every cycle to track time since start. Function controlled through serial. Any serial monitor
+// that has timestamp can be used. Usage: put this function is setup, set constants and power down period, or alternatively make
+// this function invoke on pin state. Follow instruction provided in the serial port and multiply power down period to determined
+// factor and set corresponding value in your program. Example usage: 60ms * 1.17 = 70.2ms.
+void time_calibration_mode() {
+  constexpr uint32_t num_of_sleeps = 10; // set reasonable value that test take dozens of minutes
+  constexpr uint32_t sleep_duration = 2000; // ms, set actual sleep period used
+  constexpr uint32_t basic_delay_time = 2000; // 2s delay to let usb connect, don't forget to set the inteval in powerDown function!
+  Serial.begin(115200);
+  delay(basic_delay_time);
+  Serial.println(F("Welcome to time calibration mode!"));
+  Serial.println(F("To start the test set in serial monitor \"No Line Ending\" and send \"y\", or any key to skip to calculator:"));
+  Serial.println(F("After the test has started USB will be disabled for the duration of the test."));
+  while (!Serial.available()) {}
+  if (Serial.readString() == "y") {
+    Serial.println(F("Starting time test"));
+    delay(basic_delay_time);
+    UDCON |= (1 << DETACH);
+    for (int i = 0; i < num_of_sleeps; i++) {
+      LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_ON);
+    }
+    UDCON &= ~(1 << DETACH);
+    delay(basic_delay_time);
+    Serial.println(F("Test ended"));
+  }
+  while(true) {
+    Serial.println(F("Calculator calculates relative time deviation factor, that has to be multiplied by basic sleep time to achieve accurate interval."));
+    Serial.println(F("Legit value is between 0.8 and 1.2. Example usage: 60ms * 1.17 = 70.2ms"));
+    Serial.println(F("If you make a mistake just send any symbol until you see welcome message again."));
+    Serial.println(F("Send start time in format hh:mm:s.ms and hit enter:"));
+    while (!Serial.available()) {}
+    float start_time = Serial.readStringUntil(':').toFloat() * 3600000.0;
+    start_time += Serial.readStringUntil(':').toFloat() * 60000.0;
+    start_time += Serial.readString().toFloat() * 1000.0;
+    Serial.println(F("Now send end time in format hh:mm:s.ms and hit enter:"));
+    while (!Serial.available()) {}
+    float end_time = Serial.readStringUntil(':').toFloat() * 3600000.0;
+    end_time += Serial.readStringUntil(':').toFloat() * 60000.0;
+    end_time += Serial.readString().toFloat() * 1000.0;
+    float time_factor = ((float)end_time - start_time - basic_delay_time * 2.0) / (sleep_duration * num_of_sleeps);
+    Serial.print(F("Factor is: "));
+    Serial.println(time_factor);
+    Serial.println(F("Send any symbol to start calculator again."));
+    while (!Serial.available()) {};
+    Serial.readString();
+  }
+}
