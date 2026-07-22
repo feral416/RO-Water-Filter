@@ -27,7 +27,7 @@ Power consumption of the device is 14mA(max) at 24V- 0.336W, 40mA during boot.
 
 ## Software
 
-Software is written in PlatformIO with C++ using arduino framework. Software is compatible with any other Arduino-compatible board.
+Software is written in PlatformIO with C++ using Arduino framework. Software is compatible with any other Arduino-compatible board.
 
 **Software functions:**
 
